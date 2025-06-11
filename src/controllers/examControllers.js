@@ -69,6 +69,28 @@ const {
       res.status(500).json({ error: 'Failed to fetch exams by subject' });
     }
   };
+  // Get exams filtered by class_id AND subject_id
+  exports.getExamsByClassAndSubject = async (req, res) => {
+    try {
+      const { class_id, subject_id } = req.query;
+      const school_id = req.user.school_id;
+  
+      if (!class_id || !subject_id) {
+        return res.status(400).json({ error: 'class_id and subject_id query parameters are required' });
+      }
+  
+      const exams = await Exam.findAll({
+        where: { class_id, subject_id, school_id }
+      });
+  
+      res.json(exams);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to fetch exams by class and subject' });
+    }
+  };
+
+  
   
   // Create or update question - roles: teacher, superadmin, schoolSuperadmin, schoolAdmin
   exports.createQuestion = async (req, res) => {

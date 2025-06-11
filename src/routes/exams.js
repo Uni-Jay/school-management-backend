@@ -12,6 +12,7 @@ router.post('/create', jwtAuth, roleAuth(['superadmin', 'schoolSuperadmin', 'sch
 router.get('/class/:class_id', jwtAuth, examController.getExamsByClass);
 router.get('/teacher/:teacher_id', jwtAuth, examController.getExamsByTeacher);
 router.get('/subject/:subject_id', jwtAuth, examController.getExamsBySubject);
+router.get('/filter', jwtAuth, examController.getExamsByClassAndSubject);
 
 // Question CRUD (create/update by rolesAllowedForQuestions)
 router.post('/question', jwtAuth, roleAuth(rolesAllowedForQuestions), examController.createQuestion);
