@@ -1,4 +1,14 @@
-const { Attendance, Student, Lesson } = require('../models');
+const { Attendance } = require('../../models');
+
+// Helper to apply school scope if not super_admin
+const applySchoolScope = (query, user) => {
+  if (user.role !== 'super_admin') {
+    query = Attendance.scope({ method: ['bySchool', user.school_id] });
+  } else {
+    query = Attendance;
+  }
+  return query;
+};
 
 // ✅ Create attendance
 exports.createAttendance = async (req, res) => {
@@ -25,17 +35,15 @@ exports.createAttendance = async (req, res) => {
 exports.updateAttendance = async (req, res) => {
   try {
     const id = req.params.id;
-    const { status } = req.body;
 
     const attendance = await Attendance.findByPk(id);
     if (!attendance) return res.status(404).json({ error: 'Attendance not found' });
 
-    // Authorization: Must belong to the same school
     if (req.user.role !== 'super_admin' && attendance.school_id !== req.user.school_id) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    attendance.status = status || attendance.status;
+    attendance.status = req.body.status ?? attendance.status;
     await attendance.save();
 
     res.json(attendance);
@@ -45,19 +53,18 @@ exports.updateAttendance = async (req, res) => {
   }
 };
 
-// ✅ Get all attendance (with optional filters)
+// ✅ Get all attendance with optional filters
 exports.getAllAttendance = async (req, res) => {
   try {
     const { student_id, lesson_id, date } = req.query;
 
-    const where = {
-      school_id: req.user.role === 'super_admin' ? undefined : req.user.school_id,
-      ...(student_id && { student_id }),
-      ...(lesson_id && { lesson_id }),
-      ...(date && { date })
-    };
+    let query = applySchoolScope(null, req.user);
+    const where = {};
+    if (student_id) where.student_id = student_id;
+    if (lesson_id) where.lesson_id = lesson_id;
+    if (date) where.date = date;
 
-    const attendanceRecords = await Attendance.findAll({ where });
+    const attendanceRecords = await query.findAll({ where });
     res.json(attendanceRecords);
   } catch (error) {
     console.error(error);
@@ -65,11 +72,11 @@ exports.getAllAttendance = async (req, res) => {
   }
 };
 
-// ✅ Get one attendance by ID
+// ✅ Get attendance by ID
 exports.getAttendanceById = async (req, res) => {
   try {
     const attendance = await Attendance.findByPk(req.params.id);
-    if (!attendance) return res.status(404).json({ error: 'Not found' });
+    if (!attendance) return res.status(404).json({ error: 'Attendance not found' });
 
     if (req.user.role !== 'super_admin' && attendance.school_id !== req.user.school_id) {
       return res.status(403).json({ error: 'Access denied' });
@@ -81,13 +88,14 @@ exports.getAttendanceById = async (req, res) => {
     res.status(500).json({ error: 'Error fetching attendance' });
   }
 };
+
 // ✅ Get attendance by student
 exports.getAttendanceByStudent = async (req, res) => {
   try {
-    const student_id = req.params.student_id;
-    const attendanceRecords = await Attendance.findAll({
-      where: { student_id, school_id: req.user.school_id }
-    });
+    const { student_id } = req.params;
+
+    let query = applySchoolScope(null, req.user);
+    const attendanceRecords = await query.findAll({ where: { student_id } });
 
     if (!attendanceRecords.length) return res.status(404).json({ error: 'No attendance records found for this student' });
 
@@ -97,13 +105,14 @@ exports.getAttendanceByStudent = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch attendance records for student' });
   }
 };
+
 // ✅ Get attendance by lesson
 exports.getAttendanceByLesson = async (req, res) => {
   try {
-    const lesson_id = req.params.lesson_id;
-    const attendanceRecords = await Attendance.findAll({
-      where: { lesson_id, school_id: req.user.school_id }
-    });
+    const { lesson_id } = req.params;
+
+    let query = applySchoolScope(null, req.user);
+    const attendanceRecords = await query.findAll({ where: { lesson_id } });
 
     if (!attendanceRecords.length) return res.status(404).json({ error: 'No attendance records found for this lesson' });
 
@@ -113,13 +122,14 @@ exports.getAttendanceByLesson = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch attendance records for lesson' });
   }
 };
+
 // ✅ Get attendance by date
 exports.getAttendanceByDate = async (req, res) => {
   try {
-    const date = req.params.date;
-    const attendanceRecords = await Attendance.findAll({
-      where: { date, school_id: req.user.school_id }
-    });
+    const { date } = req.params;
+
+    let query = applySchoolScope(null, req.user);
+    const attendanceRecords = await query.findAll({ where: { date } });
 
     if (!attendanceRecords.length) return res.status(404).json({ error: 'No attendance records found for this date' });
 
@@ -129,13 +139,14 @@ exports.getAttendanceByDate = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch attendance records for date' });
   }
 };
+
 // ✅ Get attendance by student and lesson
 exports.getAttendanceByStudentAndLesson = async (req, res) => {
   try {
     const { student_id, lesson_id } = req.params;
-    const attendanceRecords = await Attendance.findAll({
-      where: { student_id, lesson_id, school_id: req.user.school_id }
-    });
+
+    let query = applySchoolScope(null, req.user);
+    const attendanceRecords = await query.findAll({ where: { student_id, lesson_id } });
 
     if (!attendanceRecords.length) return res.status(404).json({ error: 'No attendance records found for this student and lesson' });
 
@@ -145,20 +156,20 @@ exports.getAttendanceByStudentAndLesson = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch attendance records for student and lesson' });
   }
 };
-// delete attendance
+
+// ✅ Delete attendance
 exports.deleteAttendance = async (req, res) => {
   try {
     const id = req.params.id;
     const attendance = await Attendance.findByPk(id);
     if (!attendance) return res.status(404).json({ error: 'Attendance not found' });
 
-    // Authorization: Must belong to the same school
     if (req.user.role !== 'super_admin' && attendance.school_id !== req.user.school_id) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
     await attendance.destroy();
-    res.status(204).send(); // No content
+    res.status(204).send();
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to delete attendance' });

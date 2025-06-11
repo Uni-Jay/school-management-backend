@@ -1,4 +1,4 @@
-const { Announcement, User, School } = require('../models');
+const { Announcement, User, School } = require('../../models');
 
 // ✅ Create new announcement
 exports.createAnnouncement = async (req, res) => {

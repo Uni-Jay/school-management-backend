@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const roleAuth = require('../middlewares/roleAuth');
-const announcementController = require('../controllers/announcementController');
+const roleAuth = require('../middlewares/roleAuth'); // Adjust the path as necessary
+const announcementController = require('../controllers/annoucementControllers'); // Adjust the path as necessary
+const jwtAuth = require('../middlewares/jwtAuth'); // Adjust the path as necessary
 
 const allowedRolesToCreate = ['super_admin', 'school_super_admin', 'school_admin', 'teacher'];
 

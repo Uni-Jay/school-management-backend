@@ -2,35 +2,38 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const PORT = process.env.PORT || 3000;
 const { sequelize } = require('../models'); // Adjust the path as necessary
-// Importing the sequelize instance from models/index.js
-// This assumes you have a models/index.js that exports sequelize
-// and all your models are defined there.
+
 app.use(cors());
 app.use(express.json());
 
-app.use('/auth', require('./routes/auth'))
+// Your API routes
+app.use('/auth', require('./routes/auth'));
 app.use('/announcements', require('./routes/announcements'));
 app.use('/assignments', require('./routes/assignments'));
-app.use('/attendance', require('./routes/attendance'));
+app.use('/attendance', require('./routes/attendances'));
+app.use('/classes', require('./routes/classes'));
 
-
-
-const PORT = process.env.PORT || 5000;
+// Root test route — place here
+app.get('/', (req, res) => {
+  res.send('Backend is running!');
+});
 
 app.listen(PORT, async () => {
   try {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
     
     await sequelize.authenticate();
     console.log('✅ DB connected');
 
-    // 👇 Sync all models
-    await sequelize.sync({ alter: true }); // use { force: true } if needed
-    console.log('✅ All models synced to DB');
+    // // 👇 Sync all models
+    // await sequelize.sync({ alter: true }); // use { force: true } if needed
+    // console.log('✅ All models synced to DB');
 
   } catch (error) {
     console.error('❌ Unable to connect to the database:', error);
   }
 });
+
 module.exports = app; // Export the app for testing or further configuration

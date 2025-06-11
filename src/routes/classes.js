@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const classController = require('../controllers/classController');
+const classController = require('../controllers/classControllers');
+const roleAuth = require('../middlewares/roleAuth'); // Adjust the path as necessary
 const jwtAuth = require('../middlewares/jwtAuth');
-const roleAuth = require('../middlewares/roleAuth');
 
 router.use(jwtAuth);
 
@@ -18,16 +18,13 @@ router.delete('/:id', roleAuth(['super_admin', 'school_super_admin', 'school_adm
 // Get all classes
 router.get('/', classController.getAllClasses);
 
-// Get class by ID
-router.get('/:id', classController.getClassById);
 // Get classes by school ID
 router.get('/school/:schoolId', classController.getClassesBySchoolId);
-// Get classes by grade level
-router.get('/grade/:gradeLevel', classController.getClassesByGradeLevel);
-// Get classes by teacher ID
-router.get('/teacher/:teacherId', classController.getClassesByTeacherId);
-// Get classes by student ID
-router.get('/student/:studentId', classController.getClassesByStudentId);
+
+
+// Get class by ID (keep this LAST among GETs with params)
+router.get('/:id', classController.getClassById);
+
 
 
 module.exports = router;

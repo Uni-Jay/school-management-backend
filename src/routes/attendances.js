@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const attendanceController = require('../controllers/attendanceController');
-const jwtAuth = require('../middlewares/jwtAuth');
+const attendanceController = require('../controllers/attendanceControllers');
 const roleAuth = require('../middlewares/roleAuth');
+const jwtAuth = require('../middlewares/jwtAuth');
 
 // Auth middleware
 router.use(jwtAuth);
@@ -16,19 +16,22 @@ router.put('/:id', roleAuth(['super_admin', 'school_super_admin', 'school_admin'
 // Get all attendance
 router.get('/', attendanceController.getAllAttendance);
 
-// Get one
-router.get('/:id', attendanceController.getAttendanceById);
+// // ✅ Place more specific route first
+// router.get('/student/:student_id/lesson/:lesson_id', attendanceController.getAttendanceByStudentAndLesson);
 
 // Get attendance by student
-// Get attendance by student
 router.get('/student/:student_id', attendanceController.getAttendanceByStudent);
+
 // Get attendance by lesson
 router.get('/lesson/:lesson_id', attendanceController.getAttendanceByLesson);
+
 // Get attendance by date
 router.get('/date/:date', attendanceController.getAttendanceByDate);
-// Get attendance by student and lesson
-router.get('/student/:student_id/lesson/:lesson_id', attendanceController.getAttendanceByStudentAndLesson);
-//delete attendance
+
+// Get one attendance by ID
+router.get('/:id', attendanceController.getAttendanceById);
+
+// Delete attendance
 router.delete('/:id', roleAuth(['super_admin', 'school_super_admin', 'school_admin', 'teacher']), attendanceController.deleteAttendance);
 
 module.exports = router;

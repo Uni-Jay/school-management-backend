@@ -1,4 +1,4 @@
-const { Class } = require('../models');
+const { Class } = require('../../models');
 
 // ✅ Create class
 exports.createClass = async (req, res) => {

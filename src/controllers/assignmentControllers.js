@@ -1,4 +1,4 @@
-const { Assignment } = require('../models');
+const { Assignment } = require('../../models');
 
 const allowedToCreateOrUpdate = ['super_admin', 'school_super_admin', 'school_admin', 'teacher'];
 
