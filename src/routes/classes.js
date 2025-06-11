@@ -18,6 +18,9 @@ router.delete('/:id', roleAuth(['super_admin', 'school_super_admin', 'school_adm
 // Get all classes
 router.get('/', classController.getAllClasses);
 
+// Get Classes by teacher ID
+router.get('/teacher/:teacherId', classController.getClassesByTeacherId);
+
 // Get classes by school ID
 router.get('/school/:schoolId', classController.getClassesBySchoolId);
 

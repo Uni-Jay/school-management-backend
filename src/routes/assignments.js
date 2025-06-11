@@ -20,6 +20,6 @@ router.post('/:id/submit', roleAuth(['student']), assignmentsController.submitAs
 router.get('/:id', assignmentsController.getAssignmentById);
 
 // Get all assignments - any authenticated user
-router.get('/', assignmentsController.getAllAssignments);
+router.get('/', roleAuth(['super_admin', 'school_super_admin', 'school_admin', 'teacher']), assignmentsController.getAllAssignments);
 
 module.exports = router;
