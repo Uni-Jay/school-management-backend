@@ -7,18 +7,48 @@ const { generateOTP } = require('../../utils/helper');
 // LOGIN
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ where: { email } });
-  if (!user || !await bcrypt.compare(password, user.password)) {
+
+  // Find user with parent and teacher profiles included (add other profiles similarly)
+  const user = await User.findOne({
+    where: { email },
+    include: [
+      { association: 'parentProfile' },
+      { association: 'teacherProfile' },
+      // add others if needed:
+      { association: 'studentProfile' },
+      { association: 'schoolAdminProfile' },
+      { association: 'schoolSuperAdminProfile' },
+      { association: 'superAdminProfile' },
+    ],
+  });
+
+  if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ message: 'Invalid credentials' });
   }
 
+  // Dynamically build roles array based on existing profiles
+  const roles = [];
+  if (user.parentProfile) roles.push('parent');
+  if (user.teacherProfile) roles.push('teacher');
+  // Add others if applicable
+  if (user.studentProfile) roles.push('student');
+  if (user.schoolAdminProfile) roles.push('school_admin');
+  if (user.schoolSuperAdminProfile) roles.push('school_super_admin');
+  if (user.superAdminProfile) roles.push('super_admin');
+
   const token = jwt.sign(
-    { id: user.id, role: user.role, school_id: user.school_id },
+    { id: user.id, email: user.email, school_id: user.school_id, roles },
     process.env.JWT_SECRET,
     { expiresIn: '1d' }
   );
 
-  res.json({ token, role: user.role });
+  res.json({
+    token,
+    roles,
+    email: user.email,
+    full_name: user.full_name,
+    school_id: user.school_id,
+  });
 };
 
 // FORGOT PASSWORD - send OTP

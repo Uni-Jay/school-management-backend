@@ -1,18 +1,43 @@
 const express = require('express');
 const router = express.Router();
-const {createParent, listParents, updateParent, deleteParent,} = require('../controllers/parentController');
+const parentController = require('../controllers/parentControllers');
+const createUploadMiddleware = require('../middlewares/upload'); // this is a function
 const jwtAuth = require('../middlewares/jwtAuth');
 const roleAuth = require('../middlewares/roleAuth');
+
+// ✅ Create upload middleware specifically for parents
+const upload = createUploadMiddleware('parents');
 
 // All routes require authentication
 router.use(jwtAuth);
 
-// CRUD
-router.post('/', roleAuth(['super_admin', 'school_super_admin', 'school_admin']), createParent);
-router.get('/', listParents);  // any authenticated user can list/search
-router.put('/:id', roleAuth(['super_admin', 'school_super_admin', 'school_admin']), updateParent);
-router.delete('/:id', roleAuth(['super_admin', 'school_super_admin', 'school_admin']), deleteParent);
+router.post(
+  '/',
+  roleAuth(['super_admin', 'school_super_admin', 'school_admin']),
+  upload.single('img'),
+  parentController.createParent
+);
 
+router.get('/', parentController.getAllParents);
+
+router.get('/:id', parentController.getParentById);
+
+router.put(
+  '/:id',
+  roleAuth(['super_admin', 'school_super_admin', 'school_admin']),
+  upload.single('img'),
+  parentController.updateParent
+);
+
+router.delete(
+  '/:id',
+  roleAuth(['super_admin', 'school_super_admin', 'school_admin']),
+  parentController.deleteParent
+);
+
+// ✅ Additional routes:
+router.get('/school/:school_id', parentController.getParentBySchoolID);
+router.get('/school/:school_id/search', parentController.getParentBySchoolIDandSearch);
+router.get('/student/:student_id', parentController.getParentsByStudentId);
 
 module.exports = router;
-

@@ -33,6 +33,8 @@ app.use('/exams', require('./src/routes/exams'));
 app.use('/events', require('./src/routes/events'));
 app.use('/lessons', require('./src/routes/lessons'));
 app.use('/gradeSchemes', require('./src/routes/gradeSchemes'));
+app.use('/parents', require('./src/routes/parents'));
+app.use('/students', require('./src/routes/students'));
 
 // Root test route — place here
 app.get('/', (req, res) => {
