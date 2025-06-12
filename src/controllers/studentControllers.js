@@ -247,29 +247,29 @@ exports.getStudentsBySchoolAndClassId = async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   };
-  
+
 exports.getStudentsBySchoolIdAndSearch = async (req, res) => {
   try {
     const { school_id } = req.params;
-    const { search } = req.query;
-
-    const where = { school_id };
-
-    if (search) {
-      where[Op.or] = [
-        { '$user.full_name$': { [Op.like]: `%${search}%` } },
-        { '$user.email$': { [Op.like]: `%${search}%` } },
-        { phone: { [Op.like]: `%${search}%` } }
-      ];
-    }
-
-    const students = await Student.findAll({
-      where,
-      include: [
-        { model: User, as: 'user', attributes: ['full_name', 'email'] },
-        { model: Parent, as: 'parent' }
-      ]
-    });
+     const { q } = req.query;
+    
+        if (!q) return res.status(400).json({ message: 'Search query (q) is required' });
+    
+        const students = await Student.findAll({
+          where: { school_id },
+          include: [{
+            model: User,
+            as: 'user',
+            attributes: ['full_name', 'email', 'role', 'school_id'],
+            where: {
+              [Op.or]: [
+                { full_name: { [Op.like]: `%${q}%` } },
+                { email: { [Op.like]: `%${q}%` } },
+              ],
+            },
+          }],
+        });
+    
 
     res.json(students);
   } catch (error) {
