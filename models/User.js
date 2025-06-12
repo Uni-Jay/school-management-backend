@@ -13,7 +13,6 @@ module.exports = (sequelize, DataTypes) => {
       'parent'
     ),
     school_id: DataTypes.INTEGER,
-    is_active: { type: DataTypes.BOOLEAN, defaultValue: true }
   });
 
   User.associate = function(models) {
