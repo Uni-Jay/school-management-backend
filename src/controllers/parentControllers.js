@@ -1,4 +1,4 @@
-const { User, Parent, School, OTP } = require('../models');
+const { User, Parent, School,} = require('../models');
 const bcrypt = require('bcryptjs');
 const { sendMail, sendSMS } = require('../utils/communication');
 const crypto = require('crypto');
