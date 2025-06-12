@@ -2,18 +2,30 @@ const { User, Teacher, Subject, Lesson } = require('../../models');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 
+
+function generatePassword(full_name, birthday) {
+  const birthYear = birthday ? birthday.split('-')[0] : '1234';
+  const firstName = full_name?.split(' ')[0] || 'user';
+  const special = '@';
+  return `${firstName}${birthYear}${special}`;
+}
+
 // Create Teacher and linked User
 exports.createTeacher = async (req, res) => {
   try {
     const {
-      full_name, email, password, school_id,
-      phone, address, img, blood_type, gender, birthday
+      full_name, email, school_id,
+      phone, address, blood_type, gender, birthday
     } = req.body;
+    const img = req.file ? req.file.filename : null;
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) return res.status(400).json({ message: 'Email already in use' });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Generate password
+    const plainPassword = generatePassword(full_name, birthday);
+
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
     const user = await User.create({
       full_name, email, password: hashedPassword,
@@ -23,6 +35,13 @@ exports.createTeacher = async (req, res) => {
     const teacher = await Teacher.create({
       user_id: user.id,
       phone, address, img, blood_type, gender, school_id, birthday
+    });
+    await sendWelcomeNotification({
+      school_id,
+      full_name,
+      email,
+      phone,
+      plainPassword  // pass the unhashed password here
     });
 
     res.status(201).json({ message: 'Teacher created', teacher });

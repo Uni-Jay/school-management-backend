@@ -1,40 +1,25 @@
 const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
+dotenv = require('dotenv');
 dotenv.config();
 
-// EMAIL SETUP (Gmail SMTP Example)
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
   auth: {
-    user: process.env.SMTP_EMAIL, // your Gmail address
-    pass: process.env.SMTP_PASSWORD // your Gmail app password
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
 });
 
 async function sendMail(to, subject, html) {
-  try {
-    await transporter.sendMail({
-      from: process.env.SMTP_EMAIL,
-      to,
-      subject,
-      html
-    });
-    console.log(`Email sent to ${to}`);
-  } catch (err) {
-    console.error(`Email error:`, err.message);
-  }
+  const mailOptions = {
+    from: `"Your App Name" <${process.env.SMTP_USER}>`,
+    to,
+    subject,
+    html
+  };
+  await transporter.sendMail(mailOptions);
 }
 
-// SMS MOCK FUNCTION
-async function sendSMS(phone, message) {
-  try {
-    // Integrate real SMS service like Twilio here if needed
-    console.log(`SMS to ${phone}: ${message}`);
-    // For example, using Twilio SDK:
-    // await twilioClient.messages.create({ body: message, from: TWILIO_NUMBER, to: phone });
-  } catch (err) {
-    console.error(`SMS error:`, err.message);
-  }
-}
-
-module.exports = { sendMail, sendSMS };
+module.exports = { sendMail };

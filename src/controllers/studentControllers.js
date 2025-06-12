@@ -4,6 +4,14 @@ const { sendWelcomeNotification } = require('../../utils/notificationsHelper'); 
 const { Op } = require('sequelize');
 const StudentSubjects = require('../../models/StudentSubjects'); // adjust path as needed
 
+
+function generatePassword(full_name, birthday) {
+  const birthYear = birthday ? birthday.split('-')[0] : '1234';
+  const firstName = full_name?.split(' ')[0] || 'user';
+  const special = '@';
+  return `${firstName}${birthYear}${special}`;
+}
+
 exports.createStudent = async (req, res) => {
     try {
       const {
@@ -26,7 +34,10 @@ exports.createStudent = async (req, res) => {
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) return res.status(400).json({ message: 'Email already in use' });
   
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // Generate password
+    const plainPassword = generatePassword(full_name, birthday);
+
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
   
       // Create User record
       const user = await User.create({
@@ -79,7 +90,7 @@ exports.createStudent = async (req, res) => {
         full_name,
         email,
         phone,
-        plainPassword: password
+        plainPassword,
       });
   
       res.status(201).json({ message: 'Student created', student });

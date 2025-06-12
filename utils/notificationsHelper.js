@@ -4,7 +4,10 @@ const { sendMail, sendSMS } = require('./communication');
 const sendWelcomeNotification = async ({ school_id, full_name, email, phone, plainPassword }) => {
   const school = await School.findByPk(school_id);
   const school_name = school?.name || 'the school';
-  const changePasswordLink = `https://yourapp.com/reset-password?email=${encodeURIComponent(email)}`;
+  const clientAppUrl = process.env.REMOTE_CLIENT_APP || process.env.LOCAL_CLIENT_APP || 'http://localhost:3000';
+  const changePasswordLink = `${clientAppUrl}/reset-password?email=${encodeURIComponent(email)}`;
+
+  // const changePasswordLink = `https://yourapp.com/reset-password?email=${encodeURIComponent(email)}`;
   const emailBody = `
     Hello ${full_name},<br/><br/>
     Welcome to <b>${school_name}</b>!<br/>
