@@ -1,70 +1,94 @@
 const { User, Student, Parent, Class, School } = require('../../models');
 const bcrypt = require('bcrypt');
 const { sendWelcomeNotification } = require('../../utils/notificationsHelper'); // adjust path as needed
+const { Op } = require('sequelize');
+const StudentSubjects = require('../../models/StudentSubjects'); // adjust path as needed
 
 exports.createStudent = async (req, res) => {
-  try {
-    const {
-      full_name, email, password, school_id,
-      admission_number, class_id, parent_id,
-      phone, address,  blood_type, gender, birthday, date_of_birth
-    } = req.body;
-    const img = req.file ? req.file.filename : null;
-
-    // Validate parent exists
-    const parent = await Parent.findByPk(parent_id);
-    if (!parent) return res.status(400).json({ message: 'Parent not found' });
-
-    // Validate class exists
-    const classExists = await Class.findByPk(class_id);
-    if (!classExists) return res.status(400).json({ message: 'Class not found' });
-
-    // Check email uniqueness
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) return res.status(400).json({ message: 'Email already in use' });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create User record
-    const user = await User.create({
-      full_name,
-      email,
-      password: hashedPassword,
-      role: 'student',
-      school_id
-    });
-
-    // Create Student profile record
-    const student = await Student.create({
-      user_id: user.id,
-      admission_number,
-      class_id,
-      parent_id,
-      phone,
-      address,
-      img,
-      blood_type,
-      gender,
-      birthday,
-      date_of_birth,
-      school_id
-    });
-
-    // Send welcome email & SMS notification with plain password
-    await sendWelcomeNotification({
-      school_id,
-      full_name,
-      email,
-      phone,
-      plainPassword: password
-    });
-
-    res.status(201).json({ message: 'Student created', student });
-  } catch (error) {
-    console.error('Create student error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+    try {
+      const {
+        full_name, email, password, school_id,
+        admission_number, class_id, parent_id,
+        phone, address, blood_type, gender, birthday, date_of_birth,
+        subject_ids = [], lesson_ids = []
+      } = req.body;
+      const img = req.file ? req.file.filename : null;
+  
+      // Validate parent exists
+      const parent = await Parent.findByPk(parent_id);
+      if (!parent) return res.status(400).json({ message: 'Parent not found' });
+  
+      // Validate class exists
+      const classExists = await Class.findByPk(class_id);
+      if (!classExists) return res.status(400).json({ message: 'Class not found' });
+  
+      // Check email uniqueness
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) return res.status(400).json({ message: 'Email already in use' });
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      // Create User record
+      const user = await User.create({
+        full_name,
+        email,
+        password: hashedPassword,
+        role: 'student',
+        school_id
+      });
+  
+      // Create Student profile record
+      const student = await Student.create({
+        user_id: user.id,
+        admission_number,
+        class_id,
+        parent_id,
+        phone,
+        address,
+        img,
+        blood_type,
+        gender,
+        birthday,
+        date_of_birth,
+        school_id
+      });
+  
+      // Assign subjects (if any)
+      if (Array.isArray(subject_ids) && subject_ids.length > 0) {
+        const subjectData = subject_ids.map(subject_id => ({
+          student_id: student.id,
+          subject_id,
+          school_id
+        }));
+        await StudentSubjects.bulkCreate(subjectData);
+      }
+  
+      // Assign lessons (if any)
+      if (Array.isArray(lesson_ids) && lesson_ids.length > 0) {
+        const lessonData = lesson_ids.map(lesson_id => ({
+          student_id: student.id,
+          lesson_id,
+          school_id
+        }));
+        await StudentLessons.bulkCreate(lessonData);
+      }
+  
+      // Send welcome notification
+      await sendWelcomeNotification({
+        school_id,
+        full_name,
+        email,
+        phone,
+        plainPassword: password
+      });
+  
+      res.status(201).json({ message: 'Student created', student });
+    } catch (error) {
+      console.error('Create student error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
+  
 
 exports.getStudentById = async (req, res) => {
   try {
