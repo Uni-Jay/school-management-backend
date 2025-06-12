@@ -1,11 +1,26 @@
-require('dotenv').config();
+const dotenv = require("dotenv");
+dotenv.config();
+
 const express = require('express');
-const cors = require('cors');
+const http = require("http");
+const cors = require("cors");
+const path = require("path");
+const helmet = require("helmet");
+const compression = require("compression");
+const cookieParser = require("cookie-parser");
+const config = require("../config");
 const app = express();
-const PORT = process.env.PORT || 3000;
+const { port, allowedDomains } = config;
 const { sequelize } = require('../models'); // Adjust the path as necessary
 
-app.use(cors());
+app.use(cors({ 
+  origin: allowedDomains, 
+  // origin: "*", 
+  credentials: true 
+}));
+app.use(helmet());
+app.use(compression());
+app.use(cookieParser());
 app.use(express.json());
 
 // Your API routes
@@ -24,9 +39,9 @@ app.get('/', (req, res) => {
   res.send('Backend is running!');
 });
 
-app.listen(PORT, async () => {
+app.listen(port, async () => {
   try {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${port}`);
     
     await sequelize.authenticate();
     console.log('✅ DB connected');
