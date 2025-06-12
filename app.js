@@ -38,6 +38,7 @@ app.use('/students', require('./src/routes/students'));
 app.use('/teachers', require('./src/routes/teachers'));
 app.use('/subjects', require('./src/routes/subjects'));
 app.use('/superAdmins', require('./src/routes/superAdmins'));
+app.use('/schoolSuperAdmins', require('./src/routes/schoolSuperAdmins'));
 
 // Root test route — place here
 app.get('/', (req, res) => {
