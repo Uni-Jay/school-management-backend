@@ -4,6 +4,8 @@ module.exports = (sequelize, DataTypes) => {
       subject_id: DataTypes.INTEGER,
       exam_id: DataTypes.INTEGER,
       score: DataTypes.FLOAT,
+      term: DataTypes.INTEGER,
+      grade: DataTypes.STRING,
       remarks: DataTypes.STRING,
       school_id: { type: DataTypes.INTEGER, allowNull: false }
     });

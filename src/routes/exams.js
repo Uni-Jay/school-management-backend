@@ -28,5 +28,6 @@ router.post('/submit', jwtAuth, roleAuth(['student']), examController.submitExam
 router.get('/scores/me', jwtAuth, roleAuth(['student, parent']), examController.getStudentScores);
 router.get('/results/all', jwtAuth, roleAuth(['superadmin', 'schoolSuperadmin', 'schoolAdmin', 'teacher']), examController.getAllStudentResults);
 router.get('/reports/student/:student_id', jwtAuth, examController.getStudentReports);
+router.get('/report-card/:student_id/:term', examController.generateReportCard);
 
 module.exports = router;

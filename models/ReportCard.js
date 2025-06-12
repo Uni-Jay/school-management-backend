@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       total_score: DataTypes.FLOAT,
       average_score: DataTypes.FLOAT,
       position: DataTypes.INTEGER,
+      grade: DataTypes.STRING,
       remarks: DataTypes.STRING,
       school_id: { type: DataTypes.INTEGER, allowNull: false }
     });

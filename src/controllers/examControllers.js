@@ -6,6 +6,8 @@ const {
     Score,
     Student,
     Subject,
+    ReportCard,
+    GradeScheme,
   } = require('../../models');
   
   exports.createExam = async (req, res) => {
@@ -216,24 +218,37 @@ const {
         }
       }
   
-      const passMark = (await Exam.findByPk(exam_id))?.pass_mark || 40;
-      const remarks = totalScore >= passMark ? 'Passed' : 'Failed';
+      // Find the grade scheme for this school where totalScore fits
+      const gradeScheme = await GradeScheme.findOne({
+        where: {
+          school_id,
+          min_score: { [Op.lte]: totalScore },
+          max_score: { [Op.gte]: totalScore }
+        }
+      });
   
+      // Fallback grade or remarks if no scheme found
+      const grade = gradeScheme ? gradeScheme.grade : 'Ungraded';
+      const remarks = totalScore >= (await Exam.findByPk(exam_id))?.pass_mark ? 'Passed' : 'Failed';
+  
+      // Save score + grade/remarks
       await Score.create({
         student_id,
         exam_id,
         subject_id,
         score: totalScore,
-        remarks,
+        remarks: remarks,
+        grade: grade,
         school_id
       });
   
-      res.json({ message: 'Exam submitted', totalScore, remarks });
+      res.json({ message: 'Exam submitted', totalScore, grade, remarks });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Failed to submit exam' });
     }
   };
+  
   
   // Get scores for a student (student only)
   exports.getStudentScores = async (req, res) => {
@@ -309,4 +324,69 @@ exports.getExamById = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch exam' });
   }
-};  
+}; 
+exports.generateReportCard = async (req, res) => {
+  try {
+    const { student_id, term } = req.params;
+    const school_id = req.user.school_id;
+
+    // Authorization: students can only get their own report
+    if (req.user.role === 'student' && req.user.id !== Number(student_id)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // Get all scores for student for this term and school
+    const scores = await Score.findAll({
+      where: { student_id, term, school_id },
+      include: [{ model: Subject, attributes: ['id', 'name'] }],
+    });
+
+    if (!scores.length) {
+      return res.status(404).json({ error: 'No scores found for this student and term' });
+    }
+
+    // Calculate total and average score
+    let total_score = 0;
+    for (const score of scores) {
+      total_score += score.score;
+    }
+    const average_score = total_score / scores.length;
+
+    // TODO: calculate position/rank if needed — this requires comparing all students in school/class
+
+    // Prepare subjects and scores array
+    const subjectScores = scores.map(s => ({
+      subject_id: s.subject_id,
+      subject_name: s.Subject.name,
+      score: s.score,
+      remarks: s.remarks
+    }));
+
+    // Create or update ReportCard for this student and term
+    let reportCard = await ReportCard.findOne({ where: { student_id, term, school_id } });
+    if (!reportCard) {
+      reportCard = await ReportCard.create({
+        student_id,
+        term,
+        total_score,
+        average_score,
+        remarks: average_score >= 40 ? 'Passed' : 'Failed', // example logic
+        school_id
+      });
+    } else {
+      reportCard.total_score = total_score;
+      reportCard.average_score = average_score;
+      reportCard.remarks = average_score >= 40 ? 'Passed' : 'Failed';
+      await reportCard.save();
+    }
+
+    // Respond with report card + detailed subjects & scores
+    res.json({
+      reportCard,
+      subjects: subjectScores
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to generate report card' });
+  }
+};
