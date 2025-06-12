@@ -59,15 +59,15 @@ module.exports = (sequelize, DataTypes) => {
     //   as: 'exams'
     // });
 
-    // Lesson.hasMany(models.Assignment, {
-    //   foreignKey: 'lesson_id',
-    //   as: 'assignments'
-    // });
+    Lesson.hasMany(models.Assignment, {
+      foreignKey: 'lesson_id',
+      as: 'assignments'
+    });
 
-    // Lesson.hasMany(models.Attendance, {
-    //   foreignKey: 'lesson_id',
-    //   as: 'attendances'
-    // });
+    Lesson.hasMany(models.Attendance, {
+      foreignKey: 'lesson_id',
+      as: 'attendances'
+    });
   };
 
   return Lesson;
