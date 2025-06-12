@@ -40,6 +40,14 @@ app.use('/subjects', require('./src/routes/subjects'));
 app.use('/superAdmins', require('./src/routes/superAdmins'));
 app.use('/schoolSuperAdmins', require('./src/routes/schoolSuperAdmins'));
 app.use('/schoolAdmins', require('./src/routes/schoolAdmins'));
+app.use('/schools', require('./src/routes/schools'));
+app.use('users', require('./src/routes/users'));
+
+// Serve static files from the 'public' directory
+app.use('/public', express.static(path.join(__dirname, 'public')));
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Root test route — place here
 app.get('/', (req, res) => {
