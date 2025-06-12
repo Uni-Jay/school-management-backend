@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const eventController = require('../controllers/eventController');
+const eventController = require('../controllers/eventControllers');
 const roleAuth = require('../middlewares/roleAuth');
 const jwtAuth = require('../middlewares/jwtAuth');
 
@@ -8,10 +8,10 @@ const jwtAuth = require('../middlewares/jwtAuth');
 router.use(jwtAuth);
 
 
-router.post('/', roleAuth(['super_admin', 'school_super_admin', 'school_admin',]), eventController.createEvent);
+router.post('/', roleAuth(['super_admin', 'school_super_admin', 'school_admin']), eventController.createEvent);
 router.get('/', eventController.getAllEvents);
 router.get('/:id', eventController.getEventById);
 router.put('/:id',roleAuth(['super_admin', 'school_super_admin', 'school_admin',]), eventController.updateEvent);
-router.delete('/:id',(['super_admin', 'school_super_admin', 'school_admin',]), eventController.deleteEvent);
+router.delete('/:id',roleAuth(['super_admin', 'school_super_admin', 'school_admin',]), eventController.deleteEvent);
 
 module.exports = router;

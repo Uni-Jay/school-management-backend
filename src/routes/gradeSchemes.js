@@ -1,17 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const gradeSchemeController = require('../controllers/gradeSchemeControllers');
-const { authenticateJWT, authorizeRoles } = require('../middleware/authMiddleware');
+const roleAuth = require('../middlewares/roleAuth'); // Adjust the path as necessary
+const jwtAuth = require('../middlewares/jwtAuth');
 
-// All routes require authentication
-router.use(authenticateJWT);
+
+// Auth middleware
+router.use(jwtAuth);
 
 // Create - only super_admin, school_super_admin, school_admin allowed
-router.post(
-  '/',
-  authorizeRoles('super_admin', 'school_super_admin', 'school_admin'),
-  gradeSchemeController.createGradeScheme
-);
+router.post('/', roleAuth(['super_admin', 'school_super_admin', 'school_admin',]), gradeSchemeController.createGradeScheme);
 
 // Get all grade schemes (any authenticated user can view)
 router.get('/', gradeSchemeController.getGradeSchemes);
@@ -20,17 +18,9 @@ router.get('/', gradeSchemeController.getGradeSchemes);
 router.get('/:id', gradeSchemeController.getGradeSchemeById);
 
 // Update - only super_admin, school_super_admin, school_admin allowed
-router.put(
-  '/:id',
-  authorizeRoles('super_admin', 'school_super_admin', 'school_admin'),
-  gradeSchemeController.updateGradeScheme
-);
+router.put('/:id',roleAuth(['super_admin', 'school_super_admin', 'school_admin',]), gradeSchemeController.updateGradeScheme);
 
 // Delete - only super_admin, school_super_admin, school_admin allowed
-router.delete(
-  '/:id',
-  authorizeRoles('super_admin', 'school_super_admin', 'school_admin'),
-  gradeSchemeController.deleteGradeScheme
-);
+router.delete('/:id',roleAuth(['super_admin', 'school_super_admin', 'school_admin',]),gradeSchemeController.deleteGradeScheme);
 
 module.exports = router;

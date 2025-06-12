@@ -15,6 +15,9 @@ app.use('/assignments', require('./routes/assignments'));
 app.use('/attendance', require('./routes/attendances'));
 app.use('/classes', require('./routes/classes'));
 app.use('/exams', require('./routes/exams'));
+app.use('/events', require('./routes/events'));
+app.use('/lessons', require('./routes/lessons'));
+app.use('/gradeSchemes', require('./routes/gradeSchemes'));
 
 // Root test route — place here
 app.get('/', (req, res) => {

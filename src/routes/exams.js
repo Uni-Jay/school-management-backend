@@ -5,7 +5,7 @@ const examController = require('../controllers/examControllers');
 const jwtAuth = require('../middlewares/jwtAuth');
 const roleAuth = require('../middlewares/roleAuth');
 const rolesAllowedForQuestions = ['superadmin', 'schoolSuperadmin', 'schoolAdmin', 'teacher'];
-const rolesAllowedForAdminView = ['superadmin', 'schoolSuperadmin', 'schoolAdmin', 'teacher', 'parent', 'student'];
+// const rolesAllowedForAdminView = ['superadmin', 'schoolSuperadmin', 'schoolAdmin', 'teacher', 'parent', 'student'];
 
 // Exam CRUD
 router.post('/create', jwtAuth, roleAuth(['superadmin', 'schoolSuperadmin', 'schoolAdmin', 'teacher']), examController.createExam);
