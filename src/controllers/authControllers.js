@@ -11,28 +11,28 @@ exports.login = async (req, res) => {
 
   const user = await User.findOne({
     where: { email },
-    include: [ 
+    include: [
       { association: 'parentProfile' },
       { association: 'teacherProfile' },
       { association: 'studentProfile' },
       { association: 'schoolAdminProfile' },
       { association: 'schoolSuperAdminProfile' },
       { association: 'superAdminProfile' },
-     ],
+    ],
   });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ message: 'Invalid credentials' });
   }
 
-  const role = user.role; // Just one role per login
-  const jwtToken = jwt.sign(
+  const role = user.role;
+  const token = jwt.sign(
     { id: user.id, email: user.email, school_id: user.school_id, role },
     process.env.JWT_SECRET,
     { expiresIn: '1d' }
   );
 
-  // Sync user to Stream
+  // Ensure server client is properly initialized with secret
   await serverClient.upsertUser({
     id: user.id.toString(),
     name: user.full_name,
@@ -40,18 +40,16 @@ exports.login = async (req, res) => {
     school_id: user.school_id,
   });
 
-  // Create Stream Chat Token
-  const chatToken = serverClient.createToken(user.id.toString(), {
-    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
-  });
+  const chatToken = serverClient.createToken(user.id.toString());
 
   res.json({
-    token: jwtToken,
+    token,
     chatToken,
     email: user.email,
     role,
     full_name: user.full_name,
     school_id: user.school_id,
+    user_id: user.id,
   });
 };
 

@@ -5,9 +5,9 @@ const jwtAuth = require('../middlewares/jwtAuth');
 const roleAuth = require('../middlewares/roleAuth');
 const createUploadMiddleware = require('../middlewares/upload');
 
-router.use(jwtAuth);
+// router.use(jwtAuth);
 const upload = createUploadMiddleware('superAdmins');
-router.use(roleAuth(['super_admin']));
+
 
 router.post('/',upload.single('img'), superAdminController.createSuperAdmin);
 router.get('/', superAdminController.getAllSuperAdmins);
