@@ -4,7 +4,10 @@ const roleAuth = require('../middlewares/roleAuth'); // Adjust the path as neces
 const announcementController = require('../controllers/annoucementControllers'); // Adjust the path as necessary
 const jwtAuth = require('../middlewares/jwtAuth'); // Adjust the path as necessary
 
-const allowedRolesToCreate = ['super_admin', 'school_super_admin', 'school_admin', 'teacher'];
+const allowedRolesToCreate = ['super_admin', 'school_super_admin', 'school_admin',];
+
+// All routes require authentication
+router.use(jwtAuth);
 
 // Protect the create announcement route
 router.post('/', roleAuth(allowedRolesToCreate), announcementController.createAnnouncement);

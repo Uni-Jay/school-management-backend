@@ -42,6 +42,8 @@ app.use('/schoolSuperAdmins', require('./src/routes/schoolSuperAdmins'));
 app.use('/schoolAdmins', require('./src/routes/schoolAdmins'));
 app.use('/schools', require('./src/routes/schools'));
 app.use('users', require('./src/routes/users'));
+app.use('/chat', require('./src/routes/chat'));
+// const { serverClient } = require('./utils/stream');
 
 // Serve static files from the 'public' directory
 app.use('/public', express.static(path.join(__dirname, 'public')));
