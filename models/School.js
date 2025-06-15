@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
     website: DataTypes.STRING,
     established_year: DataTypes.INTEGER,
     description: DataTypes.TEXT,
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
   }, {});
   School.associate = function(models) {
     School.hasMany(models.User, { foreignKey: 'school_id' });

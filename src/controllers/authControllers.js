@@ -26,20 +26,24 @@ exports.login = async (req, res) => {
   }
 
   const role = user.role;
+
   const token = jwt.sign(
     { id: user.id, email: user.email, school_id: user.school_id, role },
     process.env.JWT_SECRET,
     { expiresIn: '1d' }
   );
 
-  // Ensure server client is properly initialized with secret
-  await serverClient.upsertUser({
-    id: user.id.toString(),
-    name: user.full_name,
-    role,
-    school_id: user.school_id,
-  });
+  // ✅ Create user in Stream Chat
+  await serverClient.upsertUsers([
+    {
+      id: user.id.toString(),
+      name: user.full_name,
+      // role,
+      school_id: user.school_id,
+    }
+  ]);
 
+  // ✅ Generate a chat token for the user
   const chatToken = serverClient.createToken(user.id.toString());
 
   res.json({

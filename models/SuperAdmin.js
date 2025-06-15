@@ -38,6 +38,13 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     timestamps: true // includes createdAt and updatedAt
   });
+
+  SuperAdmin.associate = (models) => {
+  SuperAdmin.belongsTo(models.User, {
+    foreignKey: 'user_id',
+    as: 'user',
+  });
+};
     
   return SuperAdmin;
 };

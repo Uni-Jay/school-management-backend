@@ -12,6 +12,7 @@ const upload = createUploadMiddleware('superAdmins');
 router.post('/',upload.single('img'), superAdminController.createSuperAdmin);
 router.get('/', superAdminController.getAllSuperAdmins);
 router.get('/:id', superAdminController.getSuperAdminById);
+router.get('/user/:userId', superAdminController.getSuperAdminByUserId);
 router.put('/:id',upload.single('img'), superAdminController.updateSuperAdmin);
 router.delete('/:id', superAdminController.deleteSuperAdmin);
 

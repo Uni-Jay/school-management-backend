@@ -15,17 +15,82 @@ module.exports = (sequelize, DataTypes) => {
     school_id: DataTypes.INTEGER,
   });
 
-  User.associate = function(models) {
-    // All associations go here
-    User.hasOne(models.Student, { foreignKey: 'user_id', as: 'studentProfile' });
-    User.hasOne(models.SuperAdmin, { foreignKey: 'user_id', as: 'superAdminProfile' });
-    User.hasOne(models.SchoolAdmin, { foreignKey: 'user_id', as: 'schoolAdminProfile' });
-    User.hasOne(models.SchoolSuperAdmin, { foreignKey: 'user_id', as: 'schoolSuperAdminProfile' });
-    User.hasOne(models.Teacher, { foreignKey: 'user_id', as: 'teacherProfile' });
-    User.hasOne(models.Parent, { foreignKey: 'user_id', as: 'parentProfile' });
+  User.associate = (models) => {
+  User.hasOne(models.SuperAdmin, {
+    foreignKey: 'user_id',
+    as: 'superAdminProfile',
+  });
+  User.hasOne(models.SchoolSuperAdmin, {
+    foreignKey: 'user_id',
+    as: 'schoolSuperAdminProfile',
+  });
+  User.hasOne(models.SchoolAdmin, {
+    foreignKey: 'user_id',
+    as: 'schoolAdminProfile',
+  });
+  User.hasOne(models.Teacher, {
+    foreignKey: 'user_id',
+    as: 'teacherProfile',
+  });
+  User.hasOne(models.Student, {
+    foreignKey: 'user_id',
+    as: 'studentProfile',
+  });
+  User.hasOne(models.Parent, {
+    foreignKey: 'user_id',
+    as: 'parentProfile',
+  });
+  User.hasMany(models.OTP, {
+    foreignKey: 'user_id',
+    as: 'otps',
+  });
+  User.hasMany(models.Announcement, {
+    foreignKey: 'created_by',
+    as: 'announcements',
+  });
+  User.hasMany(models.Assignment, {
+    foreignKey: 'created_by',
+    as: 'assignments',
+  });
+  User.hasMany(models.Attendance, {
+    foreignKey: 'created_by',
+    as: 'attendances',
+  });
+  User.hasMany(models.Class, {
+    foreignKey: 'created_by',
+    as: 'classes',
+  });
+  User.hasMany(models.Exam, {
+    foreignKey: 'created_by',
+    as: 'exams',
+  });
+  User.hasMany(models.Event, {
+    foreignKey: 'created_by',
+    as: 'events',
+  });
+  User.hasMany(models.Lesson, {
+    foreignKey: 'created_by',
+    as: 'lessons',
+  });
+  User.hasMany(models.GradeScheme, {
+    foreignKey: 'created_by',
+    as: 'gradeSchemes',
+  });
+  User.hasMany(models.Subject, {
+    foreignKey: 'created_by',
+    as: 'subjects',
+  });
+  User.hasMany(models.Notification, {
+    foreignKey: 'user_id',
+    as: 'notifications',
+  });
 
-    User.belongsTo(models.School, { foreignKey: 'school_id', as: 'school' });
-  };
+}
+
+
+
+
+
 
   return User;
 };

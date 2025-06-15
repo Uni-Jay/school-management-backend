@@ -65,13 +65,13 @@ exports.getAllSuperAdmins = async (req, res) => {
   }
 };
 
-// Get Super Admin by ID
-exports.getSuperAdminById = async (req, res) => {
+// Get super admin by user id
+exports.getSuperAdminByUserId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const userId = req.params.userId; // this is user_id
 
     const superAdmin = await SuperAdmin.findOne({
-      where: { id },
+      where: { user_id: userId },
       include: [
         {
           model: User,
@@ -91,6 +91,34 @@ exports.getSuperAdminById = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch super admin' });
   }
 };
+
+// Get Super Admin by ID
+exports.getSuperAdminById = async (req, res) => {
+  try {
+    const userId = req.params.id;  // this is user_id
+
+    const superAdmin = await SuperAdmin.findOne({
+      where: { user_id: userId },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'full_name', 'email', 'role']
+        }
+      ]
+    });
+
+    if (!superAdmin) {
+      return res.status(404).json({ error: 'Super Admin not found' });
+    }
+
+    res.json({ superAdmin });
+  } catch (error) {
+    console.error('Error fetching super admin:', error);
+    res.status(500).json({ error: 'Failed to fetch super admin' });
+  }
+};
+
 
 // Update Super Admin
 exports.updateSuperAdmin = async (req, res) => {

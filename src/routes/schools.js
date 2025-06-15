@@ -11,12 +11,12 @@ const upload = createUploadMiddleware('schoolAdmins');
 // All routes require authentication
 router.use(jwtAuth);
 
-router.post('/', upload.single('logo_url'), schoolController.createSchool);
+router.post('/',roleAuth(['super_admin',]), upload.single('logo_url'), schoolController.createSchool);
 router.get('/', schoolController.getAllSchools);
 router.get('/search', schoolController.searchSchoolsByName);
 router.get('/:id', schoolController.getSchoolById);
-router.put('/:id', upload.single('logo_url'), schoolController.updateSchool);
-router.patch('/:id/deactivate', schoolController.deactivateSchool);
-router.patch('/:id/reactivate', schoolController.reactivateSchool);
+router.put('/:id',roleAuth(['super_admin']), upload.single('logo_url'), schoolController.updateSchool);
+router.patch('/:id/deactivate',roleAuth(['super_admin']), schoolController.deactivateSchool);
+router.patch('/:id/reactivate',roleAuth(['super_admin']), schoolController.reactivateSchool);
 
 module.exports = router;

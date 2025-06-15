@@ -5,4 +5,4 @@ const serverClient = StreamChat.getInstance(
   process.env.STREAM_API_SECRET
 );
 
-module.exports = { serverClient };
+module.exports = serverClient;
