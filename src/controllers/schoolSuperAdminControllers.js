@@ -130,6 +130,24 @@ exports.updateSchoolSuperAdmin = async (req, res) => {
   }
 };
 
+// DELETE (HARD DELETE)
+exports.deleteSchoolSuperAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const admin = await SchoolSuperAdmin.findByPk(id);
+    if (!admin) return res.status(404).json({ message: 'Not found' });
+    const user = await User.findByPk(admin.user_id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    // Delete the user and associated super admin profile
+    await user.destroy();
+    await admin.destroy();
+    res.json({ message: 'Deleted successfully' });
+  } catch (error) {
+    console.error('Delete Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // DELETE (SOFT DELETE = deactivate user)
 exports.softDeleteSchoolSuperAdmin = async (req, res) => {
   try {
@@ -222,3 +240,38 @@ exports.getSchoolSuperAdminBySchoolIDandSearch = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get school super admin by name and search
+exports.getSchoolSuperAdminByNameAndSearch = async (req, res) => {
+  try {
+    const { name } = req.params;
+    const { query } = req.query;
+
+    const admins = await SchoolSuperAdmin.findAll({
+      include: [
+        {
+          model: School,
+          as: 'school',
+          where: {
+            name: { [Op.like]: `%${name}%` }  // filter by school name here
+          },
+          attributes: ['id', 'name']
+        },
+        {
+          model: User,
+          as: 'user',
+          where: {
+            full_name: { [Op.like]: `%${query}%` }  // search by admin name
+          },
+          attributes: ['id', 'full_name', 'email', 'role']
+        }
+      ]
+    });
+
+    res.json(admins);
+  } catch (error) {
+    console.error('Search by name error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+

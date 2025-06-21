@@ -1,10 +1,10 @@
 const { School } = require('../models'); // adjust path to your models
-const { sendMail, sendSMS } = require('./communication');
+const { sendMail } = require('./communication');
 
 const sendWelcomeNotification = async ({ school_id, full_name, email, phone, plainPassword }) => {
   const school = await School.findByPk(school_id);
   const school_name = school?.name || 'the school';
-  const clientAppUrl = process.env.REMOTE_CLIENT_APP || process.env.LOCAL_CLIENT_APP || 'http://localhost:3000';
+  const clientAppUrl = process.env.REMOTE_CLIENT_APP || process.env.LOCAL_CLIENT_APP || 'http://localhost:8000';
   const changePasswordLink = `${clientAppUrl}/reset-password?email=${encodeURIComponent(email)}`;
 
   // const changePasswordLink = `https://yourapp.com/reset-password?email=${encodeURIComponent(email)}`;
@@ -20,7 +20,6 @@ const sendWelcomeNotification = async ({ school_id, full_name, email, phone, pla
   `;
 
   await sendMail(email, `Welcome to ${school_name}`, emailBody);
-  await sendSMS(phone, `Welcome ${full_name}! Temp password: ${plainPassword}`);
 };
 
 module.exports = { sendWelcomeNotification };

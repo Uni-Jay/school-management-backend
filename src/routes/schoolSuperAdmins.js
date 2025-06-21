@@ -15,9 +15,9 @@ router.post('/',roleAuth(['super_admin']), upload.single('img'), schoolSuperAdmi
 router.get('/', schoolSuperAdminController.getAllSchoolSuperAdmins);
 router.get('/:id', schoolSuperAdminController.getSchoolSuperAdminById);
 router.put('/:id',roleAuth(['super_admin']), upload.single('img'), schoolSuperAdminController.updateSchoolSuperAdmin);
-router.patch('/:id/deactivate',roleAuth(['super_admin']), schoolSuperAdminController.softDeleteSchoolSuperAdmin);
-router.patch('/:id/reactivate',roleAuth(['super_admin']), schoolSuperAdminController.reactivateSchoolSuperAdmin);
 router.get('/school/:school_id', schoolSuperAdminController.getSchoolSuperAdminBySchoolID);
 router.get('/school/:school_id/search', schoolSuperAdminController.getSchoolSuperAdminBySchoolIDandSearch);
+router.delete('/:id',roleAuth(['super_admin']), schoolSuperAdminController.deleteSchoolSuperAdmin);
+router.get('/search/:name', schoolSuperAdminController.getSchoolSuperAdminByNameAndSearch);
 
 module.exports = router;

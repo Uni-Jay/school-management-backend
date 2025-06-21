@@ -120,9 +120,9 @@ server.listen(process.env.PORT || 5000, () => {
     await sequelize.authenticate();
     console.log('✅ DB connected');
 
-    // 👇 Sync all models
-    await sequelize.sync({ alter: true }); // use { force: true } if needed
-    console.log('✅ All models synced to DB');
+    // // 👇 Sync all models
+    // await sequelize.sync({ alter: true }); // use { force: true } if needed
+    // console.log('✅ All models synced to DB');
 
   } catch (error) {
     console.error('❌ Unable to connect to the database:', error);
