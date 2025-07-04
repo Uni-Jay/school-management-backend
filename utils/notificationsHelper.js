@@ -16,7 +16,7 @@ const sendWelcomeNotification = async ({ school_id, full_name, email, phone, pla
     <b>Temporary Password:</b> ${plainPassword}<br/><br/>
     Please <a href="${changePasswordLink}">click here</a> to change your password immediately.<br/><br/>
     Best regards,<br/>
-    ${school_name} Team
+    ${school_name}.
   `;
 
   await sendMail(email, `Welcome to ${school_name}`, emailBody);

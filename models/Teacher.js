@@ -65,6 +65,11 @@ module.exports = (sequelize, DataTypes) => {
       otherKey: 'class_id',
       as: 'classes'
     });
+    // One-to-Many with School
+    Teacher.belongsTo(models.School, {
+      foreignKey: 'school_id',
+      as: 'school'
+    });
   };
 
   return Teacher;

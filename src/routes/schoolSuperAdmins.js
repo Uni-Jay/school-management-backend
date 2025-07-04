@@ -5,19 +5,33 @@ const createUploadMiddleware = require('../middlewares/upload');
 const jwtAuth = require('../middlewares/jwtAuth');
 const roleAuth = require('../middlewares/roleAuth');
 
-
 const upload = createUploadMiddleware('schoolSuperAdmins');
 
-// All routes require authentication
+// ✅ All routes require authentication
 router.use(jwtAuth);
 
-router.post('/',roleAuth(['super_admin']), upload.single('img'), schoolSuperAdminController.createSchoolSuperAdmin);
+// ✅ Create School Super Admin
+router.post('/', roleAuth(['super_admin']), upload.single('img'), schoolSuperAdminController.createSchoolSuperAdmin);
+
+// ✅ Get all School Super Admins
 router.get('/', schoolSuperAdminController.getAllSchoolSuperAdmins);
-router.get('/:id', schoolSuperAdminController.getSchoolSuperAdminById);
-router.put('/:id',roleAuth(['super_admin']), upload.single('img'), schoolSuperAdminController.updateSchoolSuperAdmin);
+
+// ✅ 🔍 Search (MUST come before `/:id`)
+router.get('/search', schoolSuperAdminController.searchSchoolSuperAdmins);
+
+// ✅ Get by School ID
 router.get('/school/:school_id', schoolSuperAdminController.getSchoolSuperAdminBySchoolID);
+
+// ✅ 🔍 Search by School ID (MUST come before `/school/:school_id`)
 router.get('/school/:school_id/search', schoolSuperAdminController.getSchoolSuperAdminBySchoolIDandSearch);
-router.delete('/:id',roleAuth(['super_admin']), schoolSuperAdminController.deleteSchoolSuperAdmin);
-router.get('/search/:name', schoolSuperAdminController.getSchoolSuperAdminByNameAndSearch);
+
+// ✅ Get by ID (MUST come after /search routes)
+router.get('/:id', schoolSuperAdminController.getSchoolSuperAdminById);
+
+// ✅ Update
+router.put('/:id', roleAuth(['super_admin']), upload.single('img'), schoolSuperAdminController.updateSchoolSuperAdmin);
+
+// ✅ Delete
+router.delete('/:id', roleAuth(['super_admin']), schoolSuperAdminController.deleteSchoolSuperAdmin);
 
 module.exports = router;

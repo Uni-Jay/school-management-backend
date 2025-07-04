@@ -1,15 +1,14 @@
-const { User, SchoolSuperAdmin, School, Teacher } = require('../../models');
+const { User, SchoolSuperAdmin, School,   } = require('../../models');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const { sendWelcomeNotification } = require('../../utils/notificationsHelper');
 
-
 function generatePassword(full_name, birthday) {
-    const birthYear = birthday ? birthday.split('-')[0] : '1234';
-    const firstName = full_name?.split(' ')[0] || 'user';
-    const special = '@';
-    return `${firstName}${birthYear}${special}`;
-  }
+  const birthYear = birthday ? birthday.split('-')[0] : '1234';
+  const firstName = full_name?.split(' ')[0] || 'user';
+  const special = '@';
+  return `${firstName}${birthYear}${special}`;
+}
 
 // CREATE
 exports.createSchoolSuperAdmin = async (req, res) => {
@@ -47,7 +46,6 @@ exports.createSchoolSuperAdmin = async (req, res) => {
       teacher_id: teacher_id || null
     });
 
-    // Send welcome email and SMS
     await sendWelcomeNotification({
       school_id,
       full_name,
@@ -72,7 +70,13 @@ exports.getAllSchoolSuperAdmins = async (req, res) => {
         { model: School, as: 'school', attributes: ['id', 'name'] }
       ]
     });
-    res.json(admins);
+
+    const response = admins.map(admin => ({
+      ...admin.toJSON(),
+      img: admin.img ? `${process.env.LOCAL_SERVER_API}/uploads/schoolSuperAdmins/${admin.img}` : null
+    }));
+
+    res.json(response);
   } catch (error) {
     console.error('Get All Error:', error);
     res.status(500).json({ message: 'Server error' });
@@ -130,17 +134,19 @@ exports.updateSchoolSuperAdmin = async (req, res) => {
   }
 };
 
-// DELETE (HARD DELETE)
+// DELETE (HARD)
 exports.deleteSchoolSuperAdmin = async (req, res) => {
   try {
     const { id } = req.params;
     const admin = await SchoolSuperAdmin.findByPk(id);
     if (!admin) return res.status(404).json({ message: 'Not found' });
+
     const user = await User.findByPk(admin.user_id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    // Delete the user and associated super admin profile
+
     await user.destroy();
     await admin.destroy();
+
     res.json({ message: 'Deleted successfully' });
   } catch (error) {
     console.error('Delete Error:', error);
@@ -148,7 +154,7 @@ exports.deleteSchoolSuperAdmin = async (req, res) => {
   }
 };
 
-// DELETE (SOFT DELETE = deactivate user)
+// SOFT DELETE
 exports.softDeleteSchoolSuperAdmin = async (req, res) => {
   try {
     const { id } = req.params;
@@ -210,27 +216,23 @@ exports.getSchoolSuperAdminBySchoolID = async (req, res) => {
 exports.getSchoolSuperAdminBySchoolIDandSearch = async (req, res) => {
   try {
     const { school_id } = req.params;
-    const { query } = req.query;
+    const { query, gender, blood_type } = req.query;
+
+    const userWhere = {};
+    if (query) userWhere[Op.or] = [
+      { full_name: { [Op.like]: `%${query}%` } },
+      { email:     { [Op.like]: `%${query}%` } },
+    ];
+
+    const adminWhere = { school_id };
+    if (gender) adminWhere.gender = gender;
+    if (blood_type) adminWhere.blood_type = blood_type;
 
     const admins = await SchoolSuperAdmin.findAll({
-      where: { school_id },
+      where: adminWhere,
       include: [
-        {
-          model: User,
-          as: 'user',
-          where: {
-            [Op.or]: [
-              { full_name: { [Op.like]: `%${query}%` } },
-              { email: { [Op.like]: `%${query}%` } }
-            ]
-          },
-          attributes: ['id', 'full_name', 'email', 'role']
-        },
-        {
-          model: School,
-          as: 'school',
-          attributes: ['id', 'name']
-        }
+        { model: User, as: 'user', where: userWhere, attributes: ['id','full_name','email'] },
+        { model: School, as: 'school', attributes: ['id','name'] }
       ]
     });
 
@@ -241,37 +243,48 @@ exports.getSchoolSuperAdminBySchoolIDandSearch = async (req, res) => {
   }
 };
 
-// Get school super admin by name and search
-exports.getSchoolSuperAdminByNameAndSearch = async (req, res) => {
+
+
+
+exports.searchSchoolSuperAdmins = async (req, res) => {
   try {
-    const { name } = req.params;
-    const { query } = req.query;
+    const { query = '', gender } = req.query;
+
+    const userConditions = [
+      { full_name: { [Op.like]: `%${query}%` } },
+      { email: { [Op.like]: `%${query}%` } }
+    ];
+
+    const schoolCondition = {
+      name: { [Op.like]: `%${query}%` }
+    };
 
     const admins = await SchoolSuperAdmin.findAll({
+      where: {
+        ...(gender && { gender })
+      },
       include: [
-        {
-          model: School,
-          as: 'school',
-          where: {
-            name: { [Op.like]: `%${name}%` }  // filter by school name here
-          },
-          attributes: ['id', 'name']
-        },
         {
           model: User,
           as: 'user',
           where: {
-            full_name: { [Op.like]: `%${query}%` }  // search by admin name
+            [Op.or]: userConditions
           },
           attributes: ['id', 'full_name', 'email', 'role']
+        },
+        {
+          model: School,
+          as: 'school',
+          required: false,
+          attributes: ['id', 'name'],
+          where: query ? schoolCondition : undefined
         }
       ]
     });
 
     res.json(admins);
   } catch (error) {
-    console.error('Search by name error:', error);
+    console.error('Search Error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
-

@@ -56,6 +56,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'school_id',
         as: 'school'
         });
+
+        
     };
   return SchoolSuperAdmin;
 };
